@@ -45,7 +45,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.dom4j.Document;
 import org.dom4j.io.DOMReader;
 import org.junit.Ignore;
@@ -53,6 +52,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.jvnet.hudson.test.recipes.PresetData;
+import org.springframework.security.context.SecurityContextHolder;
 import org.tmatesoft.svn.core.SVNCancelException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNErrorCode;
@@ -126,6 +126,7 @@ public class SubversionCommonTest extends AbstractSubversionTest {
 
         // make sure there's no link to the 'tag this build'
         Document dom = new DOMReader().read(html);
+        System.out.println(dom);
         assertNull(dom.selectSingleNode("//A[text()='Tag this build']"));
         for (HtmlAnchor a : html.getAnchors()) {
             assertFalse(a.getHrefAttribute().contains("/tagBuild/"));

@@ -27,9 +27,9 @@ THE SOFTWARE.
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.jvnet.hudson.plugins</groupId>
+        <groupId>org.eclipse.hudson.plugins</groupId>
         <artifactId>hudson-plugin-parent</artifactId>
-        <version>2.2.0</version>
+        <version>3.0.0-RC3</version>
         <relativePath />
     </parent>
 
@@ -96,7 +96,7 @@ THE SOFTWARE.
             <version>${svnkit.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jvnet.hudson.main</groupId>
+            <groupId>org.eclipse.hudson</groupId>
             <artifactId>hudson-test-framework</artifactId>
             <scope>test</scope>
             <version>${project.parent.version}</version>
@@ -110,6 +110,23 @@ THE SOFTWARE.
                     <artifactId>rest-plugin</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke</groupId>
+            <artifactId>trilead-putty-extension</artifactId>
+            <version>1.1</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>1.1.4</version>
         </dependency>
     </dependencies>
 

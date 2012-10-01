@@ -23,8 +23,6 @@
  */
 package hudson.scm;
 
-import antlr.ANTLRException;
-
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -49,12 +47,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.antlr.runtime.RecognitionException;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Email;
 import org.jvnet.hudson.test.HudsonHomeLoader.CopyExisting;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.internal.wc.admin.SVNAdminAreaFactory;
 import org.tmatesoft.svn.core.internal.wc17.db.ISVNWCDb;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNCommitClient;
@@ -378,7 +376,7 @@ public class SubversionCommitTest extends AbstractSubversionTest {
     }
 
 
-    private FreeStyleProject createPostCommitTriggerJob() throws IOException, ANTLRException {
+    private FreeStyleProject createPostCommitTriggerJob() throws IOException, RecognitionException {
         // Disable crumbs because HTMLUnit refuses to mix request bodies with
         // request parameters
         hudson.setCrumbIssuer(null);
