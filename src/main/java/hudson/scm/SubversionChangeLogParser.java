@@ -66,7 +66,9 @@ public class SubversionChangeLogParser extends ChangeLogParser {
         } catch (SAXException e) {
             throw new IOException2("Failed to parse "+changelogFile,e);
         } catch (NullPointerException e) {
-        	throw new IOException2("Failed to parse "+changelogFile,e);
+        	// If it gets a NPE, that means it was a fresh checkout, or the build was kicked off manually.
+        	// No reason to print this as an exception. Changelog.xml file only contains "<log/>" tag.
+        	System.out.println("asdf");
         }
 
         return new SubversionChangeLogSet(build,r);

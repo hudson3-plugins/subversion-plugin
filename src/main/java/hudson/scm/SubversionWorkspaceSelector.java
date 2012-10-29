@@ -85,7 +85,7 @@ public class SubversionWorkspaceSelector implements ISVNAdminAreaFactorySelector
     public static volatile int workingCopyFormat14 = SVNAdminArea14.WC_FORMAT;
     public static volatile int workingCopyFormat15 = SVNAdminArea15.WC_FORMAT;
     public static volatile int workingCopyFormat16 = SVNAdminArea16.WC_FORMAT;
-    public static volatile int workingCopyFormat17 = ISVNWCDb.WC_FORMAT_17;
+    public static volatile int workingCopyFormat17 = 12;
     
     public static volatile int workspaceFormat = workingCopyFormat14; // We set the default working copy format to 1.4
 

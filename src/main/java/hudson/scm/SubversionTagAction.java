@@ -265,7 +265,7 @@ public class SubversionTagAction extends AbstractScmTagAction implements
 					for (Entry<SvnInfo, String> e : tagSet.entrySet()) {
 						PrintStream logger = listener.getLogger();
 						logger.println("Tagging " + e.getKey() + " to "
-								+ e.getValue());
+								+ SVNURL.parseURIDecoded(e.getValue()).getURIEncodedPath()); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=389261
 
 						try {
 							SVNURL src = SVNURL.parseURIDecoded(e.getKey().url);

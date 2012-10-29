@@ -94,6 +94,7 @@ public class CheckoutUpdater extends WorkspaceUpdater {
                     }
                     File local = new File(ws, l.getLocalDir());
                     svnuc.setIgnoreExternals(l.isIgnoreExternalsOption());
+                    
                     svnuc.setEventHandler(
                             new SubversionUpdateEventHandler(new PrintStream(pos), externals, local, l.getLocalDir()));
                     svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, revision,
