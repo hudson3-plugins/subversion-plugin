@@ -126,7 +126,6 @@ public class SubversionCommonTest extends AbstractSubversionTest {
 
         // make sure there's no link to the 'tag this build'
         Document dom = new DOMReader().read(html);
-        System.out.println(dom);
         assertNull(dom.selectSingleNode("//A[text()='Tag this build']"));
         for (HtmlAnchor a : html.getAnchors()) {
             assertFalse(a.getHrefAttribute().contains("/tagBuild/"));

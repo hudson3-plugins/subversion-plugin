@@ -27,7 +27,8 @@ import hudson.model.AbstractBuild;
 import hudson.scm.SubversionChangeLogSet.LogEntry;
 import hudson.scm.SubversionChangeLogSet.Path;
 import hudson.util.IOException2;
-import org.apache.commons.digester3.Digester;
+
+import org.apache.commons.digester.Digester;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public class SubversionChangeLogParser extends ChangeLogParser {
         ArrayList<LogEntry> r = new ArrayList<LogEntry>();
         digester.push(r);
 
+        digester.setClassLoader(LogEntry.class.getClassLoader());
         digester.addObjectCreate("*/logentry", LogEntry.class);
         digester.addSetProperties("*/logentry");
         digester.addBeanPropertySetter("*/logentry/author","user");
@@ -66,9 +68,7 @@ public class SubversionChangeLogParser extends ChangeLogParser {
         } catch (SAXException e) {
             throw new IOException2("Failed to parse "+changelogFile,e);
         } catch (NullPointerException e) {
-        	// If it gets a NPE, that means it was a fresh checkout, or the build was kicked off manually.
-        	// No reason to print this as an exception. Changelog.xml file only contains "<log/>" tag.
-        	System.out.println("asdf");
+        	throw new IOException2("Failed to parse "+changelogFile,e);
         }
 
         return new SubversionChangeLogSet(build,r);
