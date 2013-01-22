@@ -120,7 +120,9 @@ public class UpdateUpdater extends WorkspaceUpdater {
             for (final ModuleLocation l : locations) {
                 try {
                     File local = new File(ws, l.getLocalDir());
-                    svnuc.setEventHandler(new SubversionUpdateEventHandler(listener.getLogger(), externals, local, l.getLocalDir()));
+                    SubversionUpdateEventHandler handler = new SubversionUpdateEventHandler(listener.getLogger(), externals, local, l.getLocalDir());
+                    svnuc.setEventHandler(handler);
+                    svnuc.setExternalsHandler(handler);
 
                     svnuc.setIgnoreExternals(l.isIgnoreExternalsOption());
                     preUpdate(l, local);

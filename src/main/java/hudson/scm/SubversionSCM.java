@@ -954,6 +954,13 @@ public class SubversionSCM extends SCM implements Serializable {
             this.url = ext.getResolvedURL().toDecodedString();
             this.revision = ext.getRevision().getNumber();
         }
+        
+        public External(String path, SVNURL externalURL, long revision) {
+        	this.path = path;
+        	this.url = externalURL.toDecodedString();
+        	this.revision = revision;
+        }
+        
 
         /**
          * Returns true if this reference is to a fixed revision.
@@ -1025,7 +1032,7 @@ public class SubversionSCM extends SCM implements Serializable {
                 }
                 for (External ext : externals) {
                     try {
-                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ws, ext.path), SVNRevision.WORKING));
+                        SvnInfo info = new SvnInfo(svnWc.doInfo(new File(ext.path), SVNRevision.WORKING));
                         revisions.put(info.url, info);
                     } catch (SVNException e) {
                         e.printStackTrace(
