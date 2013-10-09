@@ -71,7 +71,17 @@ final class PerJobCredentialStore implements Saveable, RemotableSVNAuthenticatio
     }
 
     public Credential getCredential(SerializableSVNURL serializableURL, String realm) throws SVNException {
-        return get(getCredentialsKey(serializableURL.getSVNURL().toDecodedString(), realm));
+        Credential cred;
+        String url = serializableURL.getSVNURL().toDecodedString();
+        // Try any shorter URL specification while looking for credentials
+        while ( (cred = get(getCredentialsKey(url, realm))) == null && url != null )
+        {
+           int index = url.lastIndexOf('/');
+           if(index >= 0 && index + 1 < url.length())
+              index ++;
+           url = index >= 0 ? url.substring(0,index) : null;
+        }
+        return cred;
     }
     
     

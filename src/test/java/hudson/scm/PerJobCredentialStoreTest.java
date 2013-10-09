@@ -30,6 +30,7 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.scm.SubversionSCM.DescriptorImpl.SerializableSVNURL;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -103,6 +104,34 @@ public class PerJobCredentialStoreTest extends AbstractSubversionTest {
         PerJobCredentialStore perJobCredentialStore = (PerJobCredentialStore)provider.getLocal();
         String correctPath = "matrix" + File.separator + "subversion.credentials";
         assertTrue(perJobCredentialStore.getXmlFile(configuration).getFile().getCanonicalPath().endsWith(correctPath));
+    }
+
+    public void testExternalsCredentials() throws Exception {
+        final String realm = "<svn://localhost:3690>";
+        final String url1  = "svn://localhost/repo/assembly";
+        final String url2  = "svn://localhost/repo";
+        final String url3  = "svn://localhost/repo/package/trunk";
+        final SubversionSCM.DescriptorImpl.Credential credential = new SubversionSCM.DescriptorImpl.PasswordCredential(
+            testSvnUser, testSvnPassword
+        );
+
+        //Store credentials
+        FreeStyleProject p1 = createFreeStyleProject();
+        PerJobCredentialStore credentialStore1 = new PerJobCredentialStore(p1, url1);
+        credentialStore1.acknowledgeAuthentication(realm, credential);
+        //Test authentification
+        assertTrue (credentialStore1.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url1)),realm) != null);
+        assertFalse(credentialStore1.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url2)),realm) != null);
+        assertFalse(credentialStore1.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url3)),realm) != null);
+
+        // Store less restrictive credentials
+        FreeStyleProject p2 = createFreeStyleProject();
+        PerJobCredentialStore credentialStore2 = new PerJobCredentialStore(p2, url2);
+        credentialStore2.acknowledgeAuthentication(realm, credential);
+        //Test authentification
+        assertTrue (credentialStore2.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url1)),realm) != null);
+        assertTrue (credentialStore2.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url2)),realm) != null);
+        assertTrue (credentialStore2.getCredential(new SerializableSVNURL(SVNURL.parseURIDecoded(url3)),realm) != null);
     }
 
     /**

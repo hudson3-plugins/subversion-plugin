@@ -40,12 +40,20 @@ import hudson.scm.subversion.WorkspaceUpdater;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestBuilder;
+import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNCommitClient;
+import org.tmatesoft.svn.core.wc.SVNStatus;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -138,9 +146,7 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
         Proc server = runSvnServe(getClass().getResource("HUDSON-7539.zip"));
         try {
             // enable 1.6 mode
-            HtmlForm f = createWebClient().goTo("configure").getFormByName("config");
-            f.getSelectByName("svn.workspaceFormat").setSelectedAttribute("10", true);
-            submit(f);
+            setGlobalOption("svn.workspaceFormat", "10");
 
             FreeStyleProject p = createFreeStyleProject();
             p.setScm(new SubversionSCM("svn://localhost/dir1"));
@@ -157,6 +163,39 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
         }
     }
 
+    /**
+     * Updating externals given per job credentials.
+     */
+    public void testUpdateExternalsWithPerJobCredentials() throws Exception {
+        Proc server = runSvnServe(getClass().getResource("update-externals-with-per-job-credentials.zip"));
+        try {
+            final String SVN_BASE_URL = "svn://localhost";
+            final String SVN_URL = SVN_BASE_URL + "/assembly";
+            setGlobalOption("svn.revisionPolicy", "HEAD");
+
+            SubversionSCM scm = new SubversionSCM(SVN_URL);
+
+            FreeStyleProject p = createFreeStyleProject();
+            p.setScm(scm);
+            setPerJobCredentials(p, SVN_BASE_URL, "harry", "harryssecret");
+
+            FreeStyleProject pForCommit = createFreeStyleProject();
+            pForCommit.setScm(scm);
+            setPerJobCredentials(pForCommit, SVN_BASE_URL, "harry", "harryssecret");
+
+            FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+            System.out.println(getLog(b));
+
+            createCommit(pForCommit, "a/some1.txt");
+
+            b = assertBuildStatusSuccess(p.scheduleBuild2(0));
+            System.out.println(getLog(b));
+
+        } finally {
+            server.kill();
+        }
+    }
+
     private void verifyCompatibility(String resourceName, Class<? extends WorkspaceUpdater> expected)
         throws IOException {
         InputStream io = null;
@@ -168,5 +207,40 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
             IOUtils.closeQuietly(io);
         }
         assertEquals(expected, ((SubversionSCM) job.getScm()).getWorkspaceUpdater().getClass());
+    }
+
+    private void setGlobalOption(String name, String value) throws Exception {
+        // set revision policy to HEAD
+        HtmlForm f = createWebClient().goTo("configure").getFormByName("config");
+        f.getSelectByName(name).setSelectedAttribute(value, true);
+        submit(f);
+    }
+
+    private void createCommit(FreeStyleProject forCommit, String... paths) throws Exception {
+        FreeStyleBuild b = assertBuildStatusSuccess(forCommit.scheduleBuild2(0).get());
+        SVNClientManager svnm = SubversionSCM.createSvnClientManager(forCommit);
+
+        List<File> added = new ArrayList<File>();
+        for (String path : paths) {
+            FilePath newFile = b.getWorkspace().child(path);
+            added.add(new File(newFile.getRemote()));
+            if (!newFile.exists()) {
+                newFile.touch(System.currentTimeMillis());
+                svnm.getWCClient()
+                    .doAdd(new File(newFile.getRemote()), false, false, false, SVNDepth.INFINITY, false, false);
+            } else {
+                newFile.write("random content", "UTF-8");
+            }
+        }
+        SVNCommitClient cc = svnm.getCommitClient();
+        cc.doCommit(added.toArray(new File[added.size()]), false, "added", null, null, false, false, SVNDepth.EMPTY);
+    }
+
+    private void setPerJobCredentials(FreeStyleProject p, String url, String user, String password) throws Exception {
+        SubversionSCM scm = (SubversionSCM)p.getScm();
+        descriptor.postCredential(url,
+           new UserProvidedCredential(user, password, null, Boolean.FALSE, p),
+           new PrintWriter(System.out)
+        );
     }
 }
