@@ -160,21 +160,21 @@ public class SubversionCommonTest extends AbstractSubversionTest {
         FreeStyleProject p = createFreeStyleProject();
 
         SubversionSCM scm = new SubversionSCM(
-            Arrays.asList(
+                Arrays.asList(
                 new SubversionSCM.ModuleLocation(
-                    "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "c"),
+                "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "c"),
                 new SubversionSCM.ModuleLocation(
-                    "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "d")),
-            true, new Sventon(new URL("http://www.sun.com/"), "test"), "exclude", "user", "revprop", "excludeMessage");
+                "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "d")),
+                true, new Sventon(new URL("http://www.sun.com/"), "test"), "exclude", "user", "revprop", "excludeMessage");
         p.setScm(scm);
         submit(new WebClient().getPage(p, "configure").getFormByName("config"));
         verify(scm, (SubversionSCM) p.getScm());
 
         scm = new SubversionSCM(
-            Arrays.asList(
+                Arrays.asList(
                 new SubversionSCM.ModuleLocation(
-                    "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "c")),
-            false, null, "", "", "", "");
+                "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "c")),
+                false, null, "", "", "", "");
         p.setScm(scm);
         submit(new WebClient().getPage(p, "configure").getFormByName("config"));
         verify(scm, (SubversionSCM) p.getScm());
@@ -186,10 +186,10 @@ public class SubversionCommonTest extends AbstractSubversionTest {
         FreeStyleProject p = createFreeStyleProject();
 
         SubversionSCM scm = new SubversionSCM(
-            Arrays.asList(
+                Arrays.asList(
                 new SubversionSCM.ModuleLocation(
-                    "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "")),
-            true, null, null, null, null, null);
+                "https://svn.java.net/svn/hudson~svn/trunk/hudson/test-projects/testSubversionExclusion", "")),
+                true, null, null, null, null, null);
         p.setScm(scm);
 //        configRoundtrip(p);
         verify(scm, (SubversionSCM) p.getScm());
@@ -224,10 +224,9 @@ public class SubversionCommonTest extends AbstractSubversionTest {
         assertTrue(p.poll(new StreamTaskListener(System.out, null)).hasChanges());
     }
 
-
     public void testCompareSVNAuthentications() {
         assertFalse(compareSVNAuthentications(new SVNUserNameAuthentication("me", true, null, false),
-            new SVNSSHAuthentication("me", "me", 22, true, null, false)));
+                new SVNSSHAuthentication("me", "me", 22, true, null, false)));
         // same object should compare equal
         _idem(new SVNUserNameAuthentication("me", true, null, false));
         _idem(new SVNSSHAuthentication("me", "pass", 22, true, null, false));
@@ -238,19 +237,19 @@ public class SubversionCommonTest extends AbstractSubversionTest {
 
         // make sure two Files and char[]s compare the same
         assertTrue(compareSVNAuthentications(
-            new SVNSSHAuthentication("me", new File("./some.key"), null, 23, false, null, false),
-            new SVNSSHAuthentication("me", new File("./some.key"), null, 23, false, null, false)));
+                new SVNSSHAuthentication("me", new File("./some.key"), null, 23, false, null, false),
+                new SVNSSHAuthentication("me", new File("./some.key"), null, 23, false, null, false)));
         assertTrue(compareSVNAuthentications(
-            new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false),
-            new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false)));
+                new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false),
+                new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false)));
 
         // negative cases
         assertFalse(compareSVNAuthentications(
-            new SVNSSHAuthentication("me", new File("./some1.key"), null, 23, false, null, false),
-            new SVNSSHAuthentication("me", new File("./some2.key"), null, 23, false, null, false)));
+                new SVNSSHAuthentication("me", new File("./some1.key"), null, 23, false, null, false),
+                new SVNSSHAuthentication("me", new File("./some2.key"), null, 23, false, null, false)));
         assertFalse(compareSVNAuthentications(
-            new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false),
-            new SVNSSHAuthentication("yo", "key".toCharArray(), "phrase", 0, false, null, false)));
+                new SVNSSHAuthentication("me", "key".toCharArray(), "phrase", 0, false, null, false),
+                new SVNSSHAuthentication("yo", "key".toCharArray(), "phrase", 0, false, null, false)));
 
     }
 
@@ -260,7 +259,8 @@ public class SubversionCommonTest extends AbstractSubversionTest {
     @Bug(2909)
     public void testInfiniteLoop() throws Exception {
         //Start local svn repository
-        Proc server = runSvnServe(getClass().getResource(GUEST_ACCESS_REPOSITORY_RESOURCE));
+        Process p = runSvnServe(getClass().getResource(GUEST_ACCESS_REPOSITORY_RESOURCE));
+
         SVNURL repo = SVNURL.parseURIDecoded(SVN_URL);
         try {
             // creates a purely in memory auth manager
@@ -286,7 +286,7 @@ public class SubversionCommonTest extends AbstractSubversionTest {
             attempted.add(a);
             for (int i = 0; i < 10; i++) {
                 m.acknowledgeAuthentication(false, kind, realm, SVNErrorMessage.create(SVNErrorCode.RA_NOT_AUTHORIZED),
-                    a);
+                        a);
                 try {
                     a = m.getNextAuthentication(kind, realm, repo);
                     assertNotNull(a);
@@ -297,7 +297,7 @@ public class SubversionCommonTest extends AbstractSubversionTest {
                         if (aa instanceof SVNPasswordAuthentication) {
                             SVNPasswordAuthentication pa = (SVNPasswordAuthentication) aa;
                             if (GUEST_USER_LOGIN.equals(pa.getUserName())
-                                && GUEST_USER_PASSWORD.equals(pa.getPassword())) {
+                                    && GUEST_USER_PASSWORD.equals(pa.getPassword())) {
                                 return; // yep
                             }
                         }
@@ -307,10 +307,10 @@ public class SubversionCommonTest extends AbstractSubversionTest {
             }
             fail("Looks like we went into an infinite loop");
         } finally {
-            server.kill();
+            p.destroy();
+            p.waitFor();
         }
     }
-
 
     public void testMultiModuleEnvironmentVariables() throws Exception {
         FreeStyleProject p = createFreeStyleProject();
@@ -327,10 +327,10 @@ public class SubversionCommonTest extends AbstractSubversionTest {
 
         assertEquals(SVN_URL1, builder.getEnvVars().get("SVN_URL_1"));
         assertEquals(SVN_URL2, builder.getEnvVars().get("SVN_URL_2"));
-        assertEquals(getActualRevision(p.getLastBuild(),SVN_URL1).toString(),
-            builder.getEnvVars().get("SVN_REVISION_1"));
+        assertEquals(getActualRevision(p.getLastBuild(), SVN_URL1).toString(),
+                builder.getEnvVars().get("SVN_REVISION_1"));
         assertEquals(getActualRevision(p.getLastBuild(), SVN_URL2).toString(),
-            builder.getEnvVars().get("SVN_REVISION_2"));
+                builder.getEnvVars().get("SVN_REVISION_2"));
 
     }
 
@@ -344,7 +344,7 @@ public class SubversionCommonTest extends AbstractSubversionTest {
         assertBuildStatusSuccess(p.scheduleBuild2(0).get());
         assertEquals(SVN_URL1, builder.getEnvVars().get("SVN_URL"));
         assertEquals(getActualRevision(p.getLastBuild(), SVN_URL1).toString(),
-            builder.getEnvVars().get("SVN_REVISION"));
+                builder.getEnvVars().get("SVN_REVISION"));
     }
 
     private void verify(SubversionSCM lhs, SubversionSCM rhs) {
@@ -376,11 +376,12 @@ public class SubversionCommonTest extends AbstractSubversionTest {
     }
 
     /**
-     * Loads a test Subversion repository into a temporary directory, and creates {@link hudson.scm.SubversionSCM} for it.
+     * Loads a test Subversion repository into a temporary directory, and
+     * creates {@link hudson.scm.SubversionSCM} for it.
      */
     private SubversionSCM loadSvnRepo() throws Exception {
         return new SubversionSCM(
-            "file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath()
+                "file://" + new CopyExisting(getClass().getResource("/svn-repo.zip")).allocate().toURI().toURL().getPath()
                 + "trunk/a", "a");
     }
 
@@ -397,5 +398,4 @@ public class SubversionCommonTest extends AbstractSubversionTest {
     private void _idem(SVNAuthentication a) {
         assertTrue(compareSVNAuthentications(a, a));
     }
-
 }

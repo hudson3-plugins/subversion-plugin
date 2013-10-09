@@ -21,9 +21,9 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractSubversionTest extends HudsonTestCase {
+
     protected DescriptorImpl descriptor;
     protected String kind = ISVNAuthenticationManager.PASSWORD;
-
 
     @Override
     protected void setUp() throws Exception {
@@ -33,39 +33,45 @@ public abstract class AbstractSubversionTest extends HudsonTestCase {
         descriptor = hudson.getDescriptorByType(DescriptorImpl.class);
     }
 
-    protected Proc runSvnServe(URL zip) throws Exception {
+    protected Process runSvnServe(URL zip) throws Exception {
         return runSvnServe(new CopyExisting(zip).allocate());
     }
 
     /**
-     * Runs svnserve to serve the specified directory as a subversion repository.
-     * @throws IOException 
-     * @throws InterruptedException 
+     * Runs svnserve to serve the specified directory as a subversion
+     * repository.
+     *
+     * @throws IOException
+     * @throws InterruptedException
      */
-    protected Proc runSvnServe(File repo) throws IOException, InterruptedException {
-        LocalLauncher launcher = new LocalLauncher(new StreamTaskListener(System.out, null));
+    protected Process runSvnServe(File repo) throws IOException, InterruptedException {
         try {
-            launcher.launch().cmds("svnserve", "--help").start().join();
+            ProcessBuilder pb = new ProcessBuilder("svnserve", "--help");
+            Process p = pb.start();
+            p.waitFor();
         } catch (IOException e) {
             // if we fail to launch svnserve, skip the test
             return null;
         }
-        
+
         Socket s = null;
         try {
-        	s = new Socket("localhost", 3690);
-        	
-        	// Reaching this point implies that port 3690 received a response.
-        	return null;
+            s = new Socket("localhost", 3690);
+
+            // Reaching this point implies that port 3690 received a response.
+            return null;
         } catch (IOException e) {
-        	// Failed to receive any reposnse to port 3690. That means port is available.
+            // Failed to receive any reposnse to port 3690. That means port is available.
         } finally {
-        	if (s != null) s.close();
+            if (s != null) {
+                s.close();
+            }
         }
-        
-        // Now since we verified the port is not in use let's run svnserve -d.
-        return launcher.launch().cmds(
-            "svnserve", "-d", "--foreground", "-r", repo.getAbsolutePath()).pwd(repo).start();
+
+        ProcessBuilder pb = new ProcessBuilder("svnserve", "-d", "--foreground", "-r", repo.getAbsolutePath());
+        pb.directory(repo);
+        Process p = pb.start();
+        return p;
     }
 
     protected ISVNAuthenticationManager createInMemoryManager() {

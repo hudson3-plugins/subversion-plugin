@@ -76,19 +76,19 @@ THE SOFTWARE.
         </developer>
     </developers>
   
-<!--    <repositories>
-        <repository>
-            <id>tmatesoft-releases</id>
-            <url>http://maven.tmatesoft.com/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
--->
+    <!--    <repositories>
+            <repository>
+                <id>tmatesoft-releases</id>
+                <url>http://maven.tmatesoft.com/content/repositories/releases/</url>
+                <releases>
+                    <enabled>true</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>false</enabled>
+                </snapshots>
+            </repository>
+        </repositories>
+    -->
     <dependencies>
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>
@@ -150,6 +150,11 @@ THE SOFTWARE.
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.eclipse.hudson.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <version>3.0.2</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

@@ -63,78 +63,88 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
     String kind = ISVNAuthenticationManager.PASSWORD;
 
     /**
-     * Ensures that the introduction of {@link hudson.scm.subversion.WorkspaceUpdater} maintains backward compatibility with
-     * existing data.
+     * Ensures that the introduction of
+     * {@link hudson.scm.subversion.WorkspaceUpdater} maintains backward
+     * compatibility with existing data.
      */
     public void testWorkspaceUpdaterCompatibility() throws Exception {
-        Proc p = runSvnServe(getClass().getResource("small.zip"));
-        try {
-            verifyCompatibility("legacy-update.xml", UpdateUpdater.class);
-            verifyCompatibility("legacy-checkout.xml", CheckoutUpdater.class);
-            verifyCompatibility("legacy-revert.xml", UpdateWithRevertUpdater.class);
-        } finally {
-            p.kill();
+        Process p = runSvnServe(getClass().getResource("small.zip"));
+        if (p != null) {
+            try {
+                verifyCompatibility("legacy-update.xml", UpdateUpdater.class);
+                verifyCompatibility("legacy-checkout.xml", CheckoutUpdater.class);
+                verifyCompatibility("legacy-revert.xml", UpdateWithRevertUpdater.class);
+            } finally {
+                p.destroy();
+                p.waitFor();
+            }
         }
     }
 
     public void testUpdateWithCleanUpdater() throws Exception {
         // this contains an empty "a" file and svn:ignore that ignores b
-        Proc srv = runSvnServe(getClass().getResource("clean-update-test.zip"));
-        try {
-            FreeStyleProject p = createFreeStyleProject();
-            SubversionSCM scm = new SubversionSCM("svn://localhost/");
-            scm.setWorkspaceUpdater(new UpdateWithCleanUpdater());
-            p.setScm(scm);
+        Process p = runSvnServe(getClass().getResource("clean-update-test.zip"));
+        if (p != null) {
+            try {
+                FreeStyleProject pr = createFreeStyleProject();
+                SubversionSCM scm = new SubversionSCM("svn://localhost/");
+                scm.setWorkspaceUpdater(new UpdateWithCleanUpdater());
+                pr.setScm(scm);
 
-            p.getBuildersList().add(new TestBuilder() {
-                @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-                    throws InterruptedException, IOException {
-                    FilePath ws = build.getWorkspace();
-                    // create two files
-                    ws.child("b").touch(0);
-                    ws.child("c").touch(0);
-                    return true;
-                }
-            });
-            FreeStyleBuild b = buildAndAssertSuccess(p);
+                pr.getBuildersList().add(new TestBuilder() {
+                    @Override
+                    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                            throws InterruptedException, IOException {
+                        FilePath ws = build.getWorkspace();
+                        // create two files
+                        ws.child("b").touch(0);
+                        ws.child("c").touch(0);
+                        return true;
+                    }
+                });
+                FreeStyleBuild b = buildAndAssertSuccess(pr);
 
-            // this should have created b and c
-            FilePath ws = b.getWorkspace();
-            assertTrue(ws.child("b").exists());
-            assertTrue(ws.child("c").exists());
+                // this should have created b and c
+                FilePath ws = b.getWorkspace();
+                assertTrue(ws.child("b").exists());
+                assertTrue(ws.child("c").exists());
 
-            // now, remove the builder that makes the workspace dirty and rebuild
-            p.getBuildersList().clear();
-            b = buildAndAssertSuccess(p);
-            System.out.println(b.getLog());
+                // now, remove the builder that makes the workspace dirty and rebuild
+                pr.getBuildersList().clear();
+                b = buildAndAssertSuccess(pr);
+                System.out.println(b.getLog());
 
-            // those files should have been cleaned
-            ws = b.getWorkspace();
-            assertFalse("Failed to clean up file: b", ws.child("b").exists());
-            assertFalse("Failed to clean up file: c", ws.child("c").exists());
-        } finally {
-            srv.kill();
+                // those files should have been cleaned
+                ws = b.getWorkspace();
+                assertFalse("Failed to clean up file: b", ws.child("b").exists());
+                assertFalse("Failed to clean up file: c", ws.child("c").exists());
+            } finally {
+                p.destroy();
+                p.waitFor();
+            }
         }
     }
 
     /**
-     * Used for experimenting the memory leak problem.
-     * This test by itself doesn't detect that, but I'm leaving it in anyway.
+     * Used for experimenting the memory leak problem. This test by itself
+     * doesn't detect that, but I'm leaving it in anyway.
      */
     @Bug(8061)
     public void testPollingLeak() throws Exception {
-        Proc p = runSvnServe(getClass().getResource("small.zip"));
-        try {
-            FreeStyleProject b = createFreeStyleProject();
-            b.setScm(new SubversionSCM("svn://localhost/"));
-            b.setAssignedNode(createSlave());
+        Process p = runSvnServe(getClass().getResource("small.zip"));
+        if (p != null) {
+            try {
+                FreeStyleProject b = createFreeStyleProject();
+                b.setScm(new SubversionSCM("svn://localhost/"));
+                b.setAssignedNode(createSlave());
 
-            assertBuildStatusSuccess(b.scheduleBuild2(0));
+                assertBuildStatusSuccess(b.scheduleBuild2(0));
 
-            b.poll(new StreamTaskListener(System.out, Charset.defaultCharset()));
-        } finally {
-            p.kill();
+                b.poll(new StreamTaskListener(System.out, Charset.defaultCharset()));
+            } finally {
+                p.destroy();
+                p.waitFor();
+            }
         }
     }
 
@@ -143,23 +153,26 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
      */
     @Bug(7539)
     public void testExternalsToFile() throws Exception {
-        Proc server = runSvnServe(getClass().getResource("HUDSON-7539.zip"));
-        try {
-            // enable 1.6 mode
-            setGlobalOption("svn.workspaceFormat", "10");
+        Process p = runSvnServe(getClass().getResource("HUDSON-7539.zip"));
+        if (p != null) {
+            try {
+                // enable 1.6 mode
+                setGlobalOption("svn.workspaceFormat", "10");
 
-            FreeStyleProject p = createFreeStyleProject();
-            p.setScm(new SubversionSCM("svn://localhost/dir1"));
-            FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-            System.out.println(getLog(b));
+                FreeStyleProject pr = createFreeStyleProject();
+                pr.setScm(new SubversionSCM("svn://localhost/dir1"));
+                FreeStyleBuild b = assertBuildStatusSuccess(pr.scheduleBuild2(0));
+                System.out.println(getLog(b));
 
-            assertTrue(b.getWorkspace().child("2").exists());
-            assertTrue(b.getWorkspace().child("3").exists());
-            assertTrue(b.getWorkspace().child("test.x").exists());
+                assertTrue(b.getWorkspace().child("2").exists());
+                assertTrue(b.getWorkspace().child("3").exists());
+                assertTrue(b.getWorkspace().child("test.x").exists());
 
-            assertBuildStatusSuccess(p.scheduleBuild2(0));
-        } finally {
-            server.kill();
+                assertBuildStatusSuccess(pr.scheduleBuild2(0));
+            } finally {
+                p.destroy();
+                p.waitFor();
+            }
         }
     }
 
@@ -167,37 +180,40 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
      * Updating externals given per job credentials.
      */
     public void testUpdateExternalsWithPerJobCredentials() throws Exception {
-        Proc server = runSvnServe(getClass().getResource("update-externals-with-per-job-credentials.zip"));
-        try {
-            final String SVN_BASE_URL = "svn://localhost";
-            final String SVN_URL = SVN_BASE_URL + "/assembly";
-            setGlobalOption("svn.revisionPolicy", "HEAD");
+        Process p = runSvnServe(getClass().getResource("update-externals-with-per-job-credentials.zip"));
+        if (p != null) {
+            try {
+                final String SVN_BASE_URL = "svn://localhost";
+                final String SVN_URL = SVN_BASE_URL + "/assembly";
+                setGlobalOption("svn.revisionPolicy", "HEAD");
 
-            SubversionSCM scm = new SubversionSCM(SVN_URL);
+                SubversionSCM scm = new SubversionSCM(SVN_URL);
 
-            FreeStyleProject p = createFreeStyleProject();
-            p.setScm(scm);
-            setPerJobCredentials(p, SVN_BASE_URL, "harry", "harryssecret");
+                FreeStyleProject pr = createFreeStyleProject();
+                pr.setScm(scm);
+                setPerJobCredentials(pr, SVN_BASE_URL, "harry", "harryssecret");
 
-            FreeStyleProject pForCommit = createFreeStyleProject();
-            pForCommit.setScm(scm);
-            setPerJobCredentials(pForCommit, SVN_BASE_URL, "harry", "harryssecret");
+                FreeStyleProject pForCommit = createFreeStyleProject();
+                pForCommit.setScm(scm);
+                setPerJobCredentials(pForCommit, SVN_BASE_URL, "harry", "harryssecret");
 
-            FreeStyleBuild b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-            System.out.println(getLog(b));
+                FreeStyleBuild b = assertBuildStatusSuccess(pr.scheduleBuild2(0));
+                System.out.println(getLog(b));
 
-            createCommit(pForCommit, "a/some1.txt");
+                createCommit(pForCommit, "a/some1.txt");
 
-            b = assertBuildStatusSuccess(p.scheduleBuild2(0));
-            System.out.println(getLog(b));
+                b = assertBuildStatusSuccess(pr.scheduleBuild2(0));
+                System.out.println(getLog(b));
 
-        } finally {
-            server.kill();
+            } finally {
+                p.destroy();
+                p.waitFor();
+            }
         }
     }
 
     private void verifyCompatibility(String resourceName, Class<? extends WorkspaceUpdater> expected)
-        throws IOException {
+            throws IOException {
         InputStream io = null;
         AbstractProject job = null;
         try {
@@ -227,7 +243,7 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
             if (!newFile.exists()) {
                 newFile.touch(System.currentTimeMillis());
                 svnm.getWCClient()
-                    .doAdd(new File(newFile.getRemote()), false, false, false, SVNDepth.INFINITY, false, false);
+                        .doAdd(new File(newFile.getRemote()), false, false, false, SVNDepth.INFINITY, false, false);
             } else {
                 newFile.write("random content", "UTF-8");
             }
@@ -237,10 +253,9 @@ public class WorkspaceUpdaterTest extends AbstractSubversionTest {
     }
 
     private void setPerJobCredentials(FreeStyleProject p, String url, String user, String password) throws Exception {
-        SubversionSCM scm = (SubversionSCM)p.getScm();
+        SubversionSCM scm = (SubversionSCM) p.getScm();
         descriptor.postCredential(url,
-           new UserProvidedCredential(user, password, null, Boolean.FALSE, p),
-           new PrintWriter(System.out)
-        );
+                new UserProvidedCredential(user, password, null, Boolean.FALSE, p),
+                new PrintWriter(System.out));
     }
 }
