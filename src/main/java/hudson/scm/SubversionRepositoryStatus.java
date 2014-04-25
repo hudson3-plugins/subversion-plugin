@@ -171,7 +171,7 @@ public class SubversionRepositoryStatus extends AbstractModelObject {
                                  */) {
                             // this project is possibly changed. poll now.
                             // if any of the data we used was bogus, the trigger will not detect a change
-                            LOGGER.fine("Scheduling the immediate polling of " + p);
+                            LOGGER.info("Scheduling the immediate polling of " + p);
                             trigger.run(actions);
                             pathFound = true;
 
