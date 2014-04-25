@@ -133,6 +133,10 @@ public class SubversionRepositoryStatus extends AbstractModelObject {
                 } else {
                     continue;
                 }
+                
+                if (p.isDisabled()) {
+                    continue;
+                }
 
                 SubversionSCM sscm = (SubversionSCM) scm;
                 for (ModuleLocation loc : sscm.getLocations()) {
@@ -189,7 +193,7 @@ public class SubversionRepositoryStatus extends AbstractModelObject {
         } else if (!triggerFound) {
             LOGGER.warning("No subversion jobs using SCM polling");
         } else if (!uuidFound) {
-            LOGGER.warning("No subversion jobs using repository: " + uuid);
+            LOGGER.warning("No enabled subversion jobs using repository: " + uuid);
         } else if (!pathFound) {
             LOGGER.fine("No jobs found matching the modified files");
         }
