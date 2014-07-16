@@ -194,6 +194,8 @@ public class SubversionSCM extends SCM implements Serializable {
 
     private WorkspaceUpdater workspaceUpdater;
 
+    private boolean ignoreCommitNotification;
+
     // No longer in use but left for serialization compatibility.
     @Deprecated
     private String modules;
@@ -316,11 +318,22 @@ public class SubversionSCM extends SCM implements Serializable {
             browser, excludedRegions, excludedUsers, excludedRevprop, excludedCommitMessages, includedRegions);
     }
 
-    @DataBoundConstructor
+    /**
+     * @deprecated as of 2.3.8
+     */
     public SubversionSCM(List<ModuleLocation> locations, WorkspaceUpdater workspaceUpdater,
                          SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers,
                          String excludedRevprop, String excludedCommitMessages,
                          String includedRegions) {
+        this(locations, workspaceUpdater, browser, excludedRegions, excludedUsers, excludedRevprop, 
+                excludedCommitMessages, includedRegions, false);
+    }
+
+    @DataBoundConstructor
+    public SubversionSCM(List<ModuleLocation> locations, WorkspaceUpdater workspaceUpdater,
+                         SubversionRepositoryBrowser browser, String excludedRegions, String excludedUsers,
+                         String excludedRevprop, String excludedCommitMessages,
+                         String includedRegions, boolean ignoreCommitNotification) {
         for (Iterator<ModuleLocation> itr = locations.iterator(); itr.hasNext(); ) {
             ModuleLocation ml = itr.next();
             if (ml.remote == null) {
@@ -336,6 +349,7 @@ public class SubversionSCM extends SCM implements Serializable {
         this.excludedRevprop = excludedRevprop;
         this.excludedCommitMessages = excludedCommitMessages;
         this.includedRegions = includedRegions;
+        this.ignoreCommitNotification = ignoreCommitNotification;
     }
 
     /**
@@ -387,6 +401,10 @@ public class SubversionSCM extends SCM implements Serializable {
 
     public void setWorkspaceUpdater(WorkspaceUpdater workspaceUpdater) {
         this.workspaceUpdater = workspaceUpdater;
+    }
+
+    public boolean isIgnoreCommitNotification() {
+        return ignoreCommitNotification;
     }
 
     /**
