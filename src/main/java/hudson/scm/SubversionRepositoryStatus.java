@@ -139,6 +139,10 @@ public class SubversionRepositoryStatus extends AbstractModelObject {
                 }
 
                 SubversionSCM sscm = (SubversionSCM) scm;
+                if (sscm.isIgnoreCommitNotification()) {
+                    continue;
+                }
+
                 for (ModuleLocation loc : sscm.getLocations()) {
                     if (loc.getUUID(p).equals(uuid)) {
                         uuidFound = true;
