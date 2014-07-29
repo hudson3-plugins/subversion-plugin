@@ -43,6 +43,9 @@ import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.tmatesoft.svn.core.internal.wc2.compat.SvnCodec;
+import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 
 /**
@@ -102,14 +105,28 @@ public class CheckoutUpdater extends WorkspaceUpdater {
                     svnuc.setExternalsHandler(handler);
                     
                     // If we can't find a valid working generation, fall back to 1.6 generation.
-                    if (SubversionWorkspaceSelector.workspaceFormat == SubversionWorkspaceSelector.workingCopyFormat17)
+                    if ((SubversionWorkspaceSelector.workspaceFormat == SubversionWorkspaceSelector.workingCopyFormat17) ||
+                         (SubversionWorkspaceSelector.workspaceFormat == SubversionWorkspaceSelector.workingCopyFormat18))
                     	svnuc.getOperationsFactory().setPrimaryWcGeneration(SvnWcGeneration.V17);
                     else 
                     	svnuc.getOperationsFactory().setPrimaryWcGeneration(SvnWcGeneration.V16);
                     
-                    // Finally perform a checkout.
-                    svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, revision,
-                            svnDepth, true);
+                    // Finally perform a checkout. 
+                    // Fix: 439300 - Use explicit SvnCheckout API so we could specify the workspace format
+//                    svnuc.doCheckout(l.getSVNURL(), local.getCanonicalFile(), SVNRevision.HEAD, revision,
+//                            svnDepth, true);
+                    
+                    SvnCheckout checkout = svnuc.getOperationsFactory().createCheckout();
+                    checkout.setSource(SvnTarget.fromURL(l.getSVNURL(), SVNRevision.HEAD));
+                    checkout.setSingleTarget(SvnTarget.fromFile(local.getCanonicalFile()));
+                    checkout.setRevision(revision);
+                    checkout.setDepth(svnDepth);
+                    checkout.setAllowUnversionedObstructions(true);
+                    checkout.setUpdateLocksOnDemand(svnuc.isUpdateLocksOnDemand());
+                    checkout.setIgnoreExternals(svnuc.isIgnoreExternals());
+                    checkout.setExternalsHandler(SvnCodec.externalsHandler(svnuc.getExternalsHandler()));
+                    checkout.setTargetWorkingCopyFormat(SubversionWorkspaceSelector.workspaceFormat);
+                    checkout.run();
                 }
             } catch (SVNException e) {
                 //TODO find better solution than this workaround, svnkit uses the same exception and

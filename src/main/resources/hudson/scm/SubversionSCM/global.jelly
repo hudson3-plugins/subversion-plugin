@@ -31,6 +31,7 @@ THE SOFTWARE.
             <f:option value="9"  selected="${descriptor.workspaceFormat==9}" >1.5</f:option>
             <f:option value="10" selected="${descriptor.workspaceFormat==10}">1.6 (svn:externals to file)</f:option>
             <f:option value="29" selected="${descriptor.workspaceFormat==29}">1.7</f:option>
+            <f:option value="31" selected="${descriptor.workspaceFormat==31}">1.8</f:option>
           </select>
         </f:entry>
         <f:entry title="${%Subversion Revision Policy}" help="/descriptor/hudson.scm.SubversionSCM/help/revisionPolicy">
