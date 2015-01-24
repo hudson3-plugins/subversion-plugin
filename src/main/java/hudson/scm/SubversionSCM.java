@@ -1618,9 +1618,23 @@ public class SubversionSCM extends SCM implements Serializable {
                     }
                 }
                 LOGGER.fine(String.format("getCredential(%s)=>%s", realm, credentials.get(realm)));
-                return credentials.get(realm);
+                
+                Credential cred = credentials.get(realm);
+                // Strange! SVNit retun realm some time as <https://host:port> 
+                // other time <https://host:port> + description, so be defensive
+                //see bug 447041
+                if (cred == null){
+                    for (String key : credentials.keySet()){
+                        if (realm.contains(key)){
+                            cred = credentials.get(key);
+                            break;
+                        }
+                    }
+                }
+                
+                return cred;
             }
-
+            
             public void acknowledgeAuthentication(String realm, Credential credential) {
                 // this notification is only used on the project-local store.
             }
