@@ -75,7 +75,8 @@ public abstract class AbstractSubversionTest extends HudsonTestCase {
     }
 
     protected ISVNAuthenticationManager createInMemoryManager() {
-        ISVNAuthenticationManager m = SVNWCUtil.createDefaultAuthenticationManager(hudson.root, null, null, false);
+        char[] password = null;
+        ISVNAuthenticationManager m = SVNWCUtil.createDefaultAuthenticationManager(hudson.root, null, password, false);
         m.setAuthenticationProvider(descriptor.createAuthenticationProvider(null));
         return m;
     }
